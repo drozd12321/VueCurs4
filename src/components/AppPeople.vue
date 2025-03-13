@@ -1,10 +1,8 @@
 <template>
   <div class="cont" v-if="people.length > 0">
-    <div class="inf" v-for="pipl in people">
-      <span>{{ pipl.id }}:&nbsp;</span>
-      <span
-        ><strong>{{ pipl.firstname }}</strong></span
-      >
+    <div class="inf cnt" v-for="pipl in people" :key="pipl.id">
+      <span>{{ pipl.firstname }}</span>
+      <button class="btn danger" @click="$emit('delete', pipl.id)">Удалить</button>
     </div>
   </div>
   <div class="cont" v-else>
@@ -16,7 +14,7 @@
 </template>
 <script>
 export default {
-  emits: ['load'],
+  emits: ['load', 'delete'],
   props: ['people'],
 }
 </script>
@@ -36,6 +34,9 @@ export default {
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.4);
   text-align: center;
   padding: 7px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .btn {
   background-color: black;
@@ -45,5 +46,17 @@ export default {
   border-radius: 6px;
   font-size: 20px;
   border: none;
+}
+.danger {
+  background-color: rgb(235, 31, 31);
+  margin-bottom: 6px;
+}
+span {
+  font-size: 20px;
+}
+.cnt {
+  display: flex;
+  justify-content: space-around;
+  align-self: center;
 }
 </style>

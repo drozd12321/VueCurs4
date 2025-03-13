@@ -11,6 +11,9 @@ export default {
   components: {
     AppPeople,
   },
+  mounted() {
+    this.loadData()
+  },
   methods: {
     async personSubmit() {
       console.log(this.name)
@@ -27,11 +30,13 @@ export default {
         },
       )
       const fireBase = await resp.json()
-      console.log(fireBase)
+      this.people.push({
+        firstname: this.name,
+        id: fireBase.name,
+      })
       this.name = ''
     },
     async loadData() {
-      console.log('sdd')
       const { data } = await axios.get(
         'https://vuehttp-6614a-default-rtdb.europe-west1.firebasedatabase.app/people.json',
       )
@@ -41,9 +46,13 @@ export default {
           firstname: data[item].firstName,
         }
       })
-
       this.people = pipl
-      console.log(this.people)
+    },
+    async deleteData(i) {
+      const data = await axios.delete(
+        `https://vuehttp-6614a-default-rtdb.europe-west1.firebasedatabase.app/people/${i}.json`,
+      )
+      this.people = this.people.filter((item) => item.id !== i)
     },
   },
 }
@@ -61,7 +70,7 @@ export default {
         <button class="btn" :disabled="name.length === 0">Отправить</button>
       </div>
     </form>
-    <AppPeople :people="people" @load="loadData"></AppPeople>
+    <AppPeople :people="people" @load="loadData" @delete="deleteData"></AppPeople>
   </div>
 </template>
 
