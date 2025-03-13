@@ -1,4 +1,5 @@
 <script>
+import AppAlert from './components/AppAlert.vue'
 import AppPeople from './components/AppPeople.vue'
 import axios from 'axios'
 export default {
@@ -10,6 +11,7 @@ export default {
   },
   components: {
     AppPeople,
+    AppAlert,
   },
   mounted() {
     this.loadData()
@@ -37,16 +39,18 @@ export default {
       this.name = ''
     },
     async loadData() {
-      const { data } = await axios.get(
-        'https://vuehttp-6614a-default-rtdb.europe-west1.firebasedatabase.app/people.json',
-      )
-      const pipl = Object.keys(data).map((item) => {
-        return {
-          id: item,
-          firstname: data[item].firstName,
-        }
-      })
-      this.people = pipl
+      try {
+        const { data } = await axios.get(
+          'https://vuehttp-6614a-default-rtdb.europe-west1.firebasedatabase.app/people.json',
+        )
+        const pipl = Object.keys(data).map((item) => {
+          return {
+            id: item,
+            firstname: data[item].firstName,
+          }
+        })
+        this.people = pipl
+      } catch (error) {}
     },
     async deleteData(i) {
       const data = await axios.delete(
@@ -60,6 +64,7 @@ export default {
 
 <template>
   <div class="form" @submit.prevent="personSubmit">
+    <AppAlert></AppAlert>
     <form class="fr">
       <h1>Работа с БД</h1>
       <div class="inp">

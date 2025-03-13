@@ -36,6 +36,7 @@ export default {
   padding: 7px;
   display: flex;
   align-items: center;
+  flex-direction: column;
   justify-content: center;
 }
 .btn {
@@ -58,5 +59,6 @@ span {
   display: flex;
   justify-content: space-around;
   align-self: center;
+  flex-direction: row;
 }
 </style>
