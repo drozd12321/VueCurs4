@@ -1,5 +1,6 @@
 <script>
 import AppAlert from './components/AppAlert.vue'
+import AppLoader from './components/AppLoader.vue'
 import AppPeople from './components/AppPeople.vue'
 import axios from 'axios'
 export default {
@@ -7,18 +8,25 @@ export default {
     return {
       name: '',
       people: [],
+      err: {
+        type: '',
+        title: '',
+        text: '',
+      },
+      loader: false,
     }
   },
   components: {
     AppPeople,
     AppAlert,
+    AppLoader,
   },
   mounted() {
     this.loadData()
+    console.log(this.err)
   },
   methods: {
     async personSubmit() {
-      console.log(this.name)
       const resp = await fetch(
         'https://vuehttp-6614a-default-rtdb.europe-west1.firebasedatabase.app/people.json',
         {
@@ -40,9 +48,13 @@ export default {
     },
     async loadData() {
       try {
+        this.loader = true
         const { data } = await axios.get(
           'https://vuehttp-6614a-default-rtdb.europe-west1.firebasedatabase.app/people.json',
         )
+        if (!data) {
+          throw new Error('Список людей пуст, добавьте пользователей ниже')
+        }
         const pipl = Object.keys(data).map((item) => {
           return {
             id: item,
@@ -50,13 +62,42 @@ export default {
           }
         })
         this.people = pipl
-      } catch (error) {}
+        this.loader = false
+        this.err = null
+      } catch (error) {
+        this.loader = false
+        this.err = {
+          type: 'danger',
+          title: 'Ошибка',
+          text: error.message,
+        }
+      }
     },
     async deleteData(i) {
-      const data = await axios.delete(
-        `https://vuehttp-6614a-default-rtdb.europe-west1.firebasedatabase.app/people/${i}.json`,
-      )
-      this.people = this.people.filter((item) => item.id !== i)
+      try {
+        const pers = this.people.find((item) => item.id === i).firstname
+        const data = await axios.delete(
+          `https://vuehttp-6614a-default-rtdb.europe-west1.firebasedatabase.app/people/${i}.json`,
+        )
+        this.people = this.people.filter((item) => item.id !== i)
+        if (this.err === null) {
+          this.err = {
+            title: '',
+            type: '',
+            text: '',
+          }
+        }
+        this.err.title = 'Успешно'
+        this.err.type = 'primary'
+        this.err.text = `Вы успешно удалили пользователя "${pers}"`
+      } catch (error) {
+        this.err.type = 'danger'
+        this.err.title = 'Ошибка'
+        this.err.text = error.message
+      }
+    },
+    closeAlert() {
+      this.err = null
     },
   },
 }
@@ -64,7 +105,7 @@ export default {
 
 <template>
   <div class="form" @submit.prevent="personSubmit">
-    <AppAlert></AppAlert>
+    <AppAlert v-if="err != null" :error="err" @closeAl="closeAlert"></AppAlert>
     <form class="fr">
       <h1>Работа с БД</h1>
       <div class="inp">
@@ -75,7 +116,8 @@ export default {
         <button class="btn" :disabled="name.length === 0">Отправить</button>
       </div>
     </form>
-    <AppPeople :people="people" @load="loadData" @delete="deleteData"></AppPeople>
+    <AppLoader v-if="loader"></AppLoader>
+    <AppPeople v-else :people="people" @load="loadData" @delete="deleteData"></AppPeople>
   </div>
 </template>
 
